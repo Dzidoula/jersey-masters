@@ -1,0 +1,275 @@
+'use strict'
+
+const SIZES = [36, 38, 40]
+
+const JERSEYS = [
+  { id: 'maroc', country: 'Maroc', name: 'Maillot du Maroc', title: ['Marchez vers', 'la demi-finale'], bg: '#b3202e', price: 18000, old: 24000,
+    story: "En 2022, le rêve semblait impossible. Les Lions de l'Atlas ont fait vibrer tout un continent en devenant la première équipe africaine à atteindre les demi-finales d'une Coupe du monde. Ce maillot raconte cette fierté.",
+    caption: "L'énergie des Lions de l'Atlas, portée avec fierté",
+    kit: { body: '#c1272d', trim: '#006233', accent: '#006233', pattern: 'star', num: '#ffffff' } },
+  { id: 'senegal', country: 'Sénégal', name: 'Maillot du Sénégal', title: ['La victoire est', 'dans vos gènes'], bg: '#1b9b57', price: 17000, old: 22000,
+    story: "Champions d'Afrique. Pas un titre, une identité. Les Lions de la Téranga ont conquis le continent et portent la hargne de ceux qui n'abandonnent jamais. Portez les couleurs de l'hospitalité et de la victoire.",
+    caption: 'La griffe des Lions de la Téranga, gravée dans le tissu',
+    kit: { body: '#f7f7f2', trim: '#00853f', accent: '#00853f', pattern: 'chevron', num: '#00853f' } },
+  { id: 'tunisie', country: 'Tunisie', name: 'Maillot de la Tunisie', title: ['Les premiers', 'à montrer la voie'], bg: '#c0102c', price: 13500, old: 17000,
+    story: "Ils ont été les premiers. Premier pays africain à remporter un match en Coupe du monde, en 1978. La Tunisie porte ce moment historique avec toute l'élégance des Aigles de Carthage.",
+    caption: 'La détermination des Aigles de Carthage, prête à s’envoler',
+    kit: { body: '#e70013', trim: '#ffffff', accent: '#ffffff', pattern: 'band', num: '#ffffff' } },
+  { id: 'cap-vert', country: 'Cap-Vert', name: 'Maillot du Cap-Vert', title: ['Les outsiders', 'conquièrent'], bg: '#1f4fae', price: 10500, old: 14000,
+    story: "Un archipel d'environ 500 000 âmes qui défie des nations de plus de 100 millions. Les Requins Bleus naviguent sans complexe dans les eaux les plus profondes du football africain.",
+    caption: 'La ferveur des Requins Bleus, conquérants des océans',
+    kit: { body: '#1d4aa3', trim: '#ffffff', accent: '#ffd400', pattern: 'flag', num: '#ffffff' } },
+  { id: 'nigeria', country: 'Nigeria', name: 'Maillot du Nigeria', title: ['Un style qui', 'ne passe jamais inaperçu'], bg: '#0a7d3e', price: 16000, old: 20000,
+    story: "Les Super Eagles, c'est l'audace, la vitesse et un vert devenu un symbole de toute la culture nigériane. Un maillot qui se remarque dans n'importe quelle tribune.",
+    caption: 'Le vol des Super Eagles',
+    kit: { body: '#0b8f45', trim: '#ffffff', accent: '#ffffff', pattern: 'diag', num: '#ffffff' } },
+  { id: 'ghana', country: 'Ghana', name: 'Maillot du Ghana', title: ['Une étoile noire', 'pour tout un peuple'], bg: '#a35f07', price: 14000, old: 18000,
+    story: "Les Black Stars brillent depuis des décennies. Une étoile noire sur le cœur : le Ghana rappelle que le football africain sait rêver en grand.",
+    caption: "L'étoile noire qui guide tout un pays",
+    kit: { body: '#f6f3ea', trim: '#fcd116', accent: '#111111', pattern: 'bigstar', num: '#111111' } },
+  { id: 'afrique-du-sud', country: 'Afrique du Sud', name: "Maillot de l'Afrique du Sud", title: ['Les couleurs de', 'la nation arc-en-ciel'], bg: '#0e6b5c', price: 12000, old: 16000,
+    story: "Les Bafana Bafana jouent en jaune et vert. Un maillot solaire, symbole d'unité et de fierté, taillé pour les grands soirs comme pour les gradins du quotidien.",
+    caption: "L'unité de la nation arc-en-ciel",
+    kit: { body: '#fdb913', trim: '#007a4d', accent: '#007a4d', pattern: 'vee', num: '#007a4d' } },
+  { id: 'cameroun', country: 'Cameroun', name: 'Maillot du Cameroun', title: ['Le rugissement', 'des Lions Indomptables'], bg: '#4d7c0f', price: 15000, old: 19000,
+    story: "Vert, rouge et jaune : les Lions Indomptables ont marqué plusieurs générations de supporters. Un maillot qui fait gronder le stade avant même le coup d'envoi.",
+    caption: 'Le rugissement des Lions Indomptables',
+    kit: { body: '#128a3b', trim: '#fcd116', accent: '#ce1126', pattern: 'sash', num: '#ffffff' } },
+]
+
+const $ = (s) => document.querySelector(s)
+const fcfa = (n) => n.toLocaleString('fr-FR').replace(/ /g, ' ') + ' FCFA'
+const byId = (id) => JERSEYS.find((j) => j.id === id)
+
+const store = {
+  get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d } catch { return d } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)) } catch { /* storage unavailable */ } },
+}
+
+/* ---------- jersey drawing (original SVG, no federation logos) ---------- */
+let uid = 0
+function starPoints(cx, cy, R, r) {
+  const pts = []
+  for (let i = 0; i < 10; i++) {
+    const a = (Math.PI / 5) * i - Math.PI / 2
+    const rad = i % 2 ? r : R
+    pts.push(`${(cx + rad * Math.cos(a)).toFixed(1)},${(cy + rad * Math.sin(a)).toFixed(1)}`)
+  }
+  return pts.join(' ')
+}
+function jerseySvg(k) {
+  const id = `j${++uid}`
+  const shirt = 'M96 28 L58 44 L12 112 L54 138 L80 106 L80 292 Q150 308 220 292 L220 106 L246 138 L288 112 L242 44 L204 28 Q150 74 96 28Z'
+  let art = ''
+  switch (k.pattern) {
+    case 'chevron':
+      art = [['#00853f', 150], ['#fdef42', 170], ['#e31b23', 190]]
+        .map(([c, y]) => `<path d="M70 ${y} L150 ${y + 36} L230 ${y} L230 ${y + 16} L150 ${y + 52} L70 ${y + 16}Z" fill="${c}"/>`).join('')
+      break
+    case 'star': art = `<polygon points="${starPoints(150, 172, 34, 14)}" fill="none" stroke="${k.accent}" stroke-width="5" stroke-linejoin="round"/>`; break
+    case 'bigstar': art = `<polygon points="${starPoints(150, 172, 36, 15)}" fill="${k.accent}"/>`; break
+    case 'band': art = `<rect x="70" y="146" width="160" height="12" fill="${k.accent}"/><rect x="70" y="164" width="160" height="5" fill="${k.accent}" opacity=".6"/>`; break
+    case 'flag':
+      art = `<rect x="70" y="158" width="160" height="8" fill="#fff"/><rect x="70" y="166" width="160" height="12" fill="#cf2027"/><rect x="70" y="178" width="160" height="8" fill="#fff"/><text x="150" y="150" text-anchor="middle" font-size="13" fill="${k.accent}" letter-spacing="3">★★★★★</text>`
+      break
+    case 'diag': art = `<path d="M80 120 L118 120 L80 200Z" fill="#fff" opacity=".92"/><path d="M220 120 L182 120 L220 200Z" fill="#fff" opacity=".92"/><rect x="80" y="214" width="140" height="8" fill="#fff" opacity=".8"/>`; break
+    case 'vee': art = `<path d="M80 150 L150 196 L220 150 L220 170 L150 216 L80 170Z" fill="${k.accent}"/>`; break
+    case 'sash': art = `<path d="M80 232 L220 128 L220 156 L80 260Z" fill="${k.trim}"/><path d="M80 262 L220 158 L220 170 L80 274Z" fill="${k.accent}"/>`; break
+  }
+  return `<svg viewBox="0 0 300 320" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+    <defs>
+      <clipPath id="${id}c"><path d="${shirt}"/></clipPath>
+      <linearGradient id="${id}s" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".28"/><stop offset=".3" stop-color="#fff" stop-opacity=".1"/><stop offset=".7" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".3"/></linearGradient>
+    </defs>
+    <path d="${shirt}" fill="${k.body}"/>
+    <g clip-path="url(#${id}c)">
+      ${art}
+      <text x="150" y="272" text-anchor="middle" font-family="Plus Jakarta Sans, sans-serif" font-weight="800" font-size="44" fill="${k.num}" opacity=".92">10</text>
+      <path d="M12 112 L54 138 L48 150 L4 124Z" fill="${k.trim}"/><path d="M288 112 L246 138 L252 150 L296 124Z" fill="${k.trim}"/>
+      <rect width="300" height="320" fill="url(#${id}s)"/>
+    </g>
+    <path d="M96 28 Q150 74 204 28 L192 22 Q150 56 108 22Z" fill="${k.trim}"/>
+    <path d="M106 24 Q150 58 194 24 Q150 86 106 24Z" fill="#000" opacity=".28"/>
+    <circle cx="106" cy="128" r="7" fill="${k.accent}" stroke="#fff" stroke-width="1.5" opacity=".95"/>
+    <path d="${shirt}" fill="none" stroke="#000" stroke-opacity=".18" stroke-width="1.5"/>
+  </svg>`
+}
+
+/* ---------- state ---------- */
+let idx = 0
+let size = 40
+let dir = 1
+let cart = store.get('jm-cart', [])
+let favs = store.get('jm-favs', [])
+let lastFocus = null
+
+const el = {
+  stage: $('#stage'), country: $('#country'), title: $('#title'), story: $('#story'), caption: $('#caption'),
+  jersey: $('#jersey'), price: $('#price'), old: $('#old'), sizes: $('#sizes'), heartBtn: $('#heartBtn'),
+  nextThumb: $('#nextThumb'), toast: $('#toast'), drawer: $('#drawer'), overlay: $('#overlay'),
+  items: $('#items'), total: $('#total'), cartCount: $('#cartCount'), favCount: $('#favCount'),
+  modal: $('#modal'), grid: $('#grid'), info: $('#info'),
+}
+
+const animate = (node, from, opts = {}) => node.animate(from, { duration: 650, easing: 'cubic-bezier(.16,1,.3,1)', fill: 'both', ...opts })
+
+function render(animated = true) {
+  const j = JERSEYS[idx]
+  el.stage.style.setProperty('--c', j.bg)
+  el.country.textContent = j.country
+  el.title.replaceChildren(document.createTextNode(j.title[0]), Object.assign(document.createElement('span'), { textContent: j.title[1] }))
+  el.story.textContent = j.story
+  el.caption.textContent = j.caption
+  el.price.textContent = fcfa(j.price)
+  el.old.textContent = fcfa(j.old)
+  el.jersey.innerHTML = jerseySvg(j.kit)
+  el.jersey.setAttribute('aria-label', `${j.name}, vue de face`)
+  el.nextThumb.innerHTML = jerseySvg(JERSEYS[(idx + 1) % JERSEYS.length].kit)
+  el.nextThumb.setAttribute('aria-label', `Aller au maillot suivant : ${JERSEYS[(idx + 1) % JERSEYS.length].country}`)
+  const fav = favs.includes(j.id)
+  el.heartBtn.classList.toggle('on', fav)
+  el.heartBtn.setAttribute('aria-pressed', String(fav))
+  el.sizes.replaceChildren(...SIZES.map((s) => {
+    const b = document.createElement('button')
+    b.className = 'size'; b.type = 'button'; b.textContent = s
+    b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', String(s === size)); b.setAttribute('aria-label', `Taille ${s}`)
+    b.addEventListener('click', () => { size = s; [...el.sizes.children].forEach((c) => c.setAttribute('aria-checked', String(c === b))) })
+    return b
+  }))
+  if (animated) {
+    ;[el.country, el.title, el.story, $('.cta')].forEach((n, i) => animate(n, [{ opacity: 0, transform: 'translateY(22px)' }, { opacity: 1, transform: 'none' }], { delay: i * 70 }))
+    animate(el.jersey.firstElementChild, [{ opacity: 0, transform: `translateX(${dir * 80}px) rotate(${dir * 9}deg) scale(.9)` }, { opacity: 1, transform: 'none' }], { duration: 800 })
+    ;[el.price, el.old, $('#buy .sizes')].forEach((n, i) => animate(n, [{ opacity: 0, transform: 'translateX(24px)' }, { opacity: 1, transform: 'none' }], { delay: 100 + i * 70 }))
+    animate(el.caption, [{ opacity: 0 }, { opacity: 1 }], { delay: 300 })
+  }
+}
+
+function go(step) {
+  dir = step > 0 ? 1 : -1
+  idx = (idx + step + JERSEYS.length) % JERSEYS.length
+  render()
+}
+
+/* ---------- toast ---------- */
+let toastTimer
+function toast(msg) {
+  el.toast.textContent = msg
+  el.toast.hidden = false
+  el.toast.classList.remove('show'); void el.toast.offsetWidth; el.toast.classList.add('show')
+  clearTimeout(toastTimer)
+  toastTimer = setTimeout(() => { el.toast.hidden = true }, 2600)
+}
+
+/* ---------- cart ---------- */
+function saveCart() { store.set('jm-cart', cart); store.set('jm-favs', favs); renderCart() }
+function bump(node) { node.classList.remove('pop'); void node.offsetWidth; node.classList.add('pop') }
+
+function renderCart() {
+  const count = cart.reduce((n, i) => n + i.qty, 0)
+  el.cartCount.hidden = !count; el.cartCount.textContent = count
+  el.favCount.hidden = !favs.length; el.favCount.textContent = favs.length
+  const total = cart.reduce((n, i) => n + byId(i.id).price * i.qty, 0)
+  el.total.textContent = fcfa(total)
+  if (!cart.length) { el.items.innerHTML = '<li class="empty">Votre panier est vide.</li>'; return }
+  el.items.replaceChildren(...cart.map((i, n) => {
+    const j = byId(i.id)
+    const li = document.createElement('li'); li.className = 'item'
+    li.innerHTML = jerseySvg(j.kit)
+    const info = document.createElement('div')
+    const b = document.createElement('b'); b.textContent = j.name
+    const s = document.createElement('small'); s.textContent = `Taille ${i.size}`
+    const p = document.createElement('span'); p.className = 'p'; p.textContent = fcfa(j.price)
+    info.append(b, s, p)
+    const q = document.createElement('div'); q.className = 'qty'
+    const minus = document.createElement('button'); minus.textContent = '−'; minus.setAttribute('aria-label', `Retirer un ${j.name}`)
+    const num = document.createElement('span'); num.textContent = i.qty
+    const plus = document.createElement('button'); plus.textContent = '+'; plus.setAttribute('aria-label', `Ajouter un ${j.name}`)
+    minus.addEventListener('click', () => { i.qty--; if (i.qty <= 0) cart.splice(n, 1); saveCart() })
+    plus.addEventListener('click', () => { i.qty++; saveCart() })
+    q.append(minus, num, plus)
+    li.append(info, q)
+    return li
+  }))
+}
+
+function addToCart() {
+  const j = JERSEYS[idx]
+  const line = cart.find((i) => i.id === j.id && i.size === size)
+  if (line) line.qty++; else cart.push({ id: j.id, size, qty: 1 })
+  saveCart(); bump(el.cartCount)
+  toast(`${j.name} (Taille ${size}) ajouté au panier !`)
+}
+
+function toggleFav() {
+  const j = JERSEYS[idx]
+  const on = !favs.includes(j.id)
+  favs = on ? [...favs, j.id] : favs.filter((f) => f !== j.id)
+  saveCart(); render(false); bump(el.favCount)
+  toast(on ? `${j.name} ajouté aux favoris !` : `${j.name} retiré des favoris`)
+}
+
+/* ---------- drawer & modals ---------- */
+function openLayer(node, focusSel) { lastFocus = document.activeElement; node.hidden = false; (node.querySelector(focusSel) || node).focus?.() }
+function closeAll() {
+  el.drawer.classList.remove('open'); el.drawer.setAttribute('aria-hidden', 'true'); el.overlay.hidden = true
+  el.modal.hidden = true; el.info.hidden = true
+  lastFocus?.focus?.(); lastFocus = null
+}
+function openCart() { lastFocus = document.activeElement; el.overlay.hidden = false; el.drawer.classList.add('open'); el.drawer.setAttribute('aria-hidden', 'false'); $('#closeCart').focus() }
+
+function openGrid(list, title) {
+  $('#modalTitle').textContent = title
+  el.grid.replaceChildren(...list.map((j) => {
+    const c = document.createElement('div'); c.className = 'card'
+    c.innerHTML = jerseySvg(j.kit)
+    const k = document.createElement('small'); k.textContent = j.country
+    const n = document.createElement('b'); n.textContent = j.name
+    const p = document.createElement('span'); p.textContent = fcfa(j.price)
+    const b = document.createElement('button'); b.textContent = 'Voir le maillot'
+    b.addEventListener('click', () => { const t = JERSEYS.indexOf(j); dir = t >= idx ? 1 : -1; idx = t; closeAll(); render() })
+    c.append(k, n, p, b)
+    return c
+  }))
+  openLayer(el.modal, '#closeModal')
+}
+function openInfo(title, text) { $('#infoTitle').textContent = title; $('#infoText').textContent = text; openLayer(el.info, '#closeInfo') }
+
+/* ---------- events ---------- */
+$('#prev').addEventListener('click', () => go(-1))
+$('#next').addEventListener('click', () => go(1))
+el.nextThumb.addEventListener('click', () => go(1))
+$('#addBtn').addEventListener('click', addToCart)
+el.heartBtn.addEventListener('click', toggleFav)
+$('#cartBtn').addEventListener('click', openCart)
+$('#closeCart').addEventListener('click', closeAll)
+$('#closeModal').addEventListener('click', closeAll)
+$('#closeInfo').addEventListener('click', closeAll)
+el.overlay.addEventListener('click', closeAll)
+;[el.modal, el.info].forEach((m) => m.addEventListener('click', (e) => { if (e.target === m) closeAll() }))
+$('#favBtn').addEventListener('click', () => {
+  const list = JERSEYS.filter((j) => favs.includes(j.id))
+  if (list.length) openGrid(list, 'Mes favoris'); else toast('Aucun favori pour le moment')
+})
+document.querySelectorAll('[data-action]').forEach((a) => a.addEventListener('click', (e) => {
+  e.preventDefault()
+  const t = a.dataset.action
+  if (t === 'open-all') openGrid(JERSEYS, 'Tous nos maillots africains')
+  if (t === 'about') openInfo('À propos', "Jersey Masters est un projet de démonstration : une boutique fictive de maillots de football africains, pour mettre en valeur le design et les animations. Les maillots sont des illustrations originales et les prix sont fictifs.")
+  if (t === 'contact') openInfo('Contact', 'Projet de démonstration — code source sur github.com/Dzidoula/jersey-masters.')
+}))
+$('#checkout').addEventListener('click', () => {
+  if (!cart.length) { toast('Votre panier est vide'); return }
+  cart = []; saveCart(); closeAll(); toast('Merci ! (démo : aucune commande réelle)')
+})
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeAll()
+  if (!el.modal.hidden || !el.info.hidden || el.drawer.classList.contains('open')) return
+  if (e.key === 'ArrowRight') go(1)
+  if (e.key === 'ArrowLeft') go(-1)
+})
+let x0 = null
+el.stage.addEventListener('touchstart', (e) => { x0 = e.touches[0].clientX }, { passive: true })
+el.stage.addEventListener('touchend', (e) => { if (x0 === null) return; const d = e.changedTouches[0].clientX - x0; if (Math.abs(d) > 60) go(d < 0 ? 1 : -1); x0 = null })
+
+renderCart()
+render(false)
