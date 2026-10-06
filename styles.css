@@ -42,7 +42,8 @@ a { color: inherit; text-decoration: none; }
 .round:hover { background: rgb(255 255 255 / .28); transform: scale(1.08); }
 .country { margin: 0 0 10px; font-size: 11px; font-weight: 800; letter-spacing: .22em; text-transform: uppercase; color: #ffd400; }
 h1 { margin: 0; font-size: clamp(30px, 4vw, 52px); line-height: 1.05; font-weight: 700; letter-spacing: -.02em; }
-h1 span { display: block; font-weight: 500; opacity: .92; }
+h1 .l2 { display: block; font-weight: 500; opacity: .92; }
+.w { display: inline-block; }
 .story { margin: 22px 0 28px; max-width: 360px; font-size: 12.5px; line-height: 1.7; opacity: .75; }
 .cta { display: flex; align-items: center; gap: 12px; }
 .btn-add { display: inline-flex; align-items: center; gap: 10px; padding: 14px 24px; border-radius: 999px; background: #fff; color: #111; font-size: 12px; font-weight: 700; transition: transform .25s var(--ease), box-shadow .25s; }
@@ -51,10 +52,10 @@ h1 span { display: block; font-weight: 500; opacity: .92; }
 .heart.on { background: #ff3b30; border-color: #ff3b30; }
 .heart.on svg, .icon-btn.on svg { fill: currentColor; }
 
-.visual { position: relative; display: grid; justify-items: center; align-content: center; }
+.visual { perspective: 1000px; position: relative; display: grid; justify-items: center; align-content: center; }
 .glow { position: absolute; width: 70%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, rgb(255 255 255 / .28), transparent 65%); filter: blur(20px); animation: breathe 6s ease-in-out infinite; }
 @keyframes breathe { 50% { transform: scale(1.12); opacity: .75; } }
-.jersey { position: relative; width: min(100%, 430px); filter: drop-shadow(0 30px 34px rgb(0 0 0 / .38)); animation: float 6s ease-in-out infinite; }
+.jersey { position: relative; transform-style: preserve-3d; transition: transform .3s ease-out; width: min(100%, 430px); filter: drop-shadow(0 30px 34px rgb(0 0 0 / .38)); animation: float 6s ease-in-out infinite; }
 .jersey svg { width: 100%; height: auto; display: block; }
 @keyframes float { 50% { translate: 0 -12px; } }
 .caption { margin: 14px 0 0; max-width: 260px; text-align: center; font-size: 11px; font-weight: 500; opacity: .8; }

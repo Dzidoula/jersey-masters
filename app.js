@@ -80,7 +80,7 @@ function jerseySvg(k) {
   return `<svg viewBox="0 0 300 320" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
     <defs>
       <clipPath id="${id}c"><path d="${shirt}"/></clipPath>
-      <filter id="${id}b" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="6"/></filter>
+      <filter id="${id}b" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="9"/></filter>
       <linearGradient id="${id}s" x1="0" x2="1">
         <stop offset="0" stop-color="#000" stop-opacity=".30"/><stop offset=".22" stop-color="#000" stop-opacity=".04"/>
         <stop offset=".5" stop-color="#fff" stop-opacity=".07"/><stop offset=".78" stop-color="#000" stop-opacity=".05"/><stop offset="1" stop-color="#000" stop-opacity=".34"/>
@@ -99,9 +99,9 @@ function jerseySvg(k) {
       <path d="M62 38 L78 112 M238 38 L222 112" stroke="#000" stroke-opacity=".28" stroke-width="1.6" fill="none"/>
       <path d="M63.500 39 L79.500 113 M236.500 39 L220.500 113" stroke="#fff" stroke-opacity=".22" stroke-width="1" stroke-dasharray="3 2" fill="none"/>
       <ellipse cx="82" cy="122" rx="14" ry="26" fill="#000" opacity=".22" filter="url(#${id}b)"/><ellipse cx="218" cy="122" rx="14" ry="26" fill="#000" opacity=".22" filter="url(#${id}b)"/>
-      <path d="M112 128 Q122 205 108 288" stroke="#fff" stroke-opacity=".14" stroke-width="14" fill="none" filter="url(#${id}b)"/>
-      <path d="M190 132 Q180 210 196 290" stroke="#000" stroke-opacity=".16" stroke-width="16" fill="none" filter="url(#${id}b)"/>
-      <path d="M140 150 Q150 215 138 288" stroke="#000" stroke-opacity=".07" stroke-width="10" fill="none" filter="url(#${id}b)"/>
+      <path d="M112 128 Q122 205 108 288" stroke="#fff" stroke-opacity=".07" stroke-width="20" fill="none" filter="url(#${id}b)"/>
+      <path d="M190 132 Q180 210 196 290" stroke="#000" stroke-opacity=".08" stroke-width="22" fill="none" filter="url(#${id}b)"/>
+      <path d="M140 150 Q150 215 138 288" stroke="#000" stroke-opacity=".035" stroke-width="14" fill="none" filter="url(#${id}b)"/>
       <rect width="300" height="320" fill="url(#${id}m)"/>
       <rect width="300" height="320" fill="url(#${id}s)"/>
       <rect width="300" height="320" fill="url(#${id}v)"/>
@@ -134,16 +134,38 @@ const el = {
   modal: $('#modal'), grid: $('#grid'), info: $('#info'),
 }
 
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches
+let prevPrice = 0
+function countPrice(to, animated) {
+  const from = prevPrice; prevPrice = to
+  if (!animated || reduce) { el.price.textContent = fcfa(to); return }
+  const t0 = performance.now()
+  const tick = (t) => {
+    const p = Math.min((t - t0) / 700, 1)
+    el.price.textContent = fcfa(Math.round((from + (to - from) * (1 - Math.pow(1 - p, 3))) / 50) * 50)
+    if (p < 1) requestAnimationFrame(tick); else el.price.textContent = fcfa(to)
+  }
+  requestAnimationFrame(tick)
+}
+function words(text) {
+  const frag = document.createDocumentFragment()
+  text.split(' ').forEach((w, i, a) => {
+    const sp = document.createElement('span'); sp.className = 'w'; sp.textContent = w
+    frag.append(sp); if (i < a.length - 1) frag.append(' ')
+  })
+  return frag
+}
 const animate = (node, from, opts = {}) => node.animate(from, { duration: 650, easing: 'cubic-bezier(.16,1,.3,1)', fill: 'both', ...opts })
 
 function render(animated = true) {
   const j = JERSEYS[idx]
   el.stage.style.setProperty('--c', j.bg)
   el.country.textContent = j.country
-  el.title.replaceChildren(document.createTextNode(j.title[0]), Object.assign(document.createElement('span'), { textContent: j.title[1] }))
+  const l2 = document.createElement('span'); l2.className = 'l2'; l2.append(words(j.title[1]))
+  el.title.replaceChildren(words(j.title[0]), l2)
   el.story.textContent = j.story
   el.caption.textContent = j.caption
-  el.price.textContent = fcfa(j.price)
+  countPrice(j.price, animated)
   el.old.textContent = fcfa(j.old)
   el.jersey.innerHTML = jerseySvg(j.kit)
   el.jersey.setAttribute('aria-label', `${j.name}, vue de face`)
@@ -160,8 +182,9 @@ function render(animated = true) {
     return b
   }))
   if (animated) {
-    ;[el.country, el.title, el.story, $('.cta')].forEach((n, i) => animate(n, [{ opacity: 0, transform: 'translateY(22px)' }, { opacity: 1, transform: 'none' }], { delay: i * 70 }))
-    animate(el.jersey.firstElementChild, [{ opacity: 0, transform: `translateX(${dir * 80}px) rotate(${dir * 9}deg) scale(.9)` }, { opacity: 1, transform: 'none' }], { duration: 800 })
+    ;[el.country, el.story, $('.cta')].forEach((n, i) => animate(n, [{ opacity: 0, transform: 'translateY(22px)' }, { opacity: 1, transform: 'none' }], { delay: i * 70 }))
+    el.title.querySelectorAll('.w').forEach((w, i) => animate(w, [{ opacity: 0, transform: 'translateY(26px) rotate(4deg)' }, { opacity: 1, transform: 'none' }], { delay: 60 + i * 55 }))
+    animate(el.jersey.firstElementChild, [{ opacity: 0, transform: `translateX(${dir * 90}px) rotateY(${dir * 75}deg) rotate(${dir * 6}deg) scale(.88)` }, { opacity: 1, transform: 'none' }], { duration: 900 })
     ;[el.price, el.old, $('#buy .sizes')].forEach((n, i) => animate(n, [{ opacity: 0, transform: 'translateX(24px)' }, { opacity: 1, transform: 'none' }], { delay: 100 + i * 70 }))
     animate(el.caption, [{ opacity: 0 }, { opacity: 1 }], { delay: 300 })
   }
@@ -219,8 +242,22 @@ function addToCart() {
   const j = JERSEYS[idx]
   const line = cart.find((i) => i.id === j.id && i.size === size)
   if (line) line.qty++; else cart.push({ id: j.id, size, qty: 1 })
-  saveCart(); bump(el.cartCount)
+  saveCart()
+  if (reduce) bump(el.cartCount); else fly()
   toast(`${j.name} (Taille ${size}) ajouté au panier !`)
+}
+
+function fly() {
+  const src = el.jersey.querySelector('svg'), a = src.getBoundingClientRect(), b = $('#cartBtn').getBoundingClientRect()
+  const ghost = src.cloneNode(true)
+  Object.assign(ghost.style, { position: 'fixed', left: a.left + 'px', top: a.top + 'px', width: a.width + 'px', height: a.height + 'px', zIndex: 70, pointerEvents: 'none', filter: 'drop-shadow(0 10px 14px rgb(0 0 0 / .4))' })
+  document.body.append(ghost)
+  const dx = b.left + b.width / 2 - (a.left + a.width / 2), dy = b.top + b.height / 2 - (a.top + a.height / 2)
+  ghost.animate([
+    { transform: 'none', opacity: 1 },
+    { transform: `translate(${dx * 0.5}px, ${dy * 0.5 - 80}px) scale(.45) rotate(-10deg)`, opacity: 1, offset: 0.5 },
+    { transform: `translate(${dx}px, ${dy}px) scale(.05)`, opacity: 0.2 },
+  ], { duration: 750, easing: 'cubic-bezier(.5,0,.3,1)' }).onfinish = () => { ghost.remove(); bump(el.cartCount) }
 }
 
 function toggleFav() {
@@ -293,6 +330,16 @@ document.addEventListener('keydown', (e) => {
 let x0 = null
 el.stage.addEventListener('touchstart', (e) => { x0 = e.touches[0].clientX }, { passive: true })
 el.stage.addEventListener('touchend', (e) => { if (x0 === null) return; const d = e.changedTouches[0].clientX - x0; if (Math.abs(d) > 60) go(d < 0 ? 1 : -1); x0 = null })
+
+if (matchMedia('(hover: hover) and (pointer: fine)').matches && !reduce) {
+  const vis = $('.visual')
+  vis.addEventListener('pointermove', (e) => {
+    const r = vis.getBoundingClientRect()
+    const x = (e.clientX - r.left) / r.width - 0.5, y = (e.clientY - r.top) / r.height - 0.5
+    el.jersey.style.transform = `perspective(900px) rotateY(${(x * 18).toFixed(1)}deg) rotateX(${(-y * 14).toFixed(1)}deg)`
+  })
+  vis.addEventListener('pointerleave', () => { el.jersey.style.transform = '' })
+}
 
 renderCart()
 render(false)
