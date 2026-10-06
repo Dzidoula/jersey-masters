@@ -59,39 +59,62 @@ function starPoints(cx, cy, R, r) {
 }
 function jerseySvg(k) {
   const id = `j${++uid}`
-  const shirt = 'M96 28 L58 44 L12 112 L54 138 L80 106 L80 292 Q150 308 220 292 L220 106 L246 138 L288 112 L242 44 L204 28 Q150 74 96 28Z'
+  const shirt = 'M104 22 L62 38 Q40 46 28 70 L8 118 Q5 124 12 128 L50 148 Q56 151 60 144 L78 112 Q72 150 75 190 Q78 250 74 288 Q150 308 226 288 Q222 250 225 190 Q228 150 222 112 L240 144 Q244 151 250 148 L288 128 Q295 124 292 118 L272 70 Q260 46 238 38 L196 22 L150 66Z'
   let art = ''
   switch (k.pattern) {
     case 'chevron':
       art = [['#00853f', 150], ['#fdef42', 170], ['#e31b23', 190]]
         .map(([c, y]) => `<path d="M70 ${y} L150 ${y + 36} L230 ${y} L230 ${y + 16} L150 ${y + 52} L70 ${y + 16}Z" fill="${c}"/>`).join('')
       break
-    case 'star': art = `<polygon points="${starPoints(150, 172, 34, 14)}" fill="none" stroke="${k.accent}" stroke-width="5" stroke-linejoin="round"/>`; break
-    case 'bigstar': art = `<polygon points="${starPoints(150, 172, 36, 15)}" fill="${k.accent}"/>`; break
+    case 'star': art = `<polygon points="${starPoints(150, 174, 34, 14)}" fill="none" stroke="${k.accent}" stroke-width="5" stroke-linejoin="round"/>`; break
+    case 'bigstar': art = `<polygon points="${starPoints(150, 174, 36, 15)}" fill="${k.accent}"/>`; break
     case 'band': art = `<rect x="70" y="146" width="160" height="12" fill="${k.accent}"/><rect x="70" y="164" width="160" height="5" fill="${k.accent}" opacity=".6"/>`; break
     case 'flag':
-      art = `<rect x="70" y="158" width="160" height="8" fill="#fff"/><rect x="70" y="166" width="160" height="12" fill="#cf2027"/><rect x="70" y="178" width="160" height="8" fill="#fff"/><text x="150" y="150" text-anchor="middle" font-size="13" fill="${k.accent}" letter-spacing="3">★★★★★</text>`
+      art = `<rect x="70" y="160" width="160" height="8" fill="#fff"/><rect x="70" y="168" width="160" height="12" fill="#cf2027"/><rect x="70" y="180" width="160" height="8" fill="#fff"/><text x="150" y="152" text-anchor="middle" font-size="13" fill="${k.accent}" letter-spacing="3">★★★★★</text>`
       break
-    case 'diag': art = `<path d="M80 120 L118 120 L80 200Z" fill="#fff" opacity=".92"/><path d="M220 120 L182 120 L220 200Z" fill="#fff" opacity=".92"/><rect x="80" y="214" width="140" height="8" fill="#fff" opacity=".8"/>`; break
-    case 'vee': art = `<path d="M80 150 L150 196 L220 150 L220 170 L150 216 L80 170Z" fill="${k.accent}"/>`; break
-    case 'sash': art = `<path d="M80 232 L220 128 L220 156 L80 260Z" fill="${k.trim}"/><path d="M80 262 L220 158 L220 170 L80 274Z" fill="${k.accent}"/>`; break
+    case 'diag': art = `<path d="M76 120 L118 120 L76 204Z" fill="#fff" opacity=".92"/><path d="M224 120 L182 120 L224 204Z" fill="#fff" opacity=".92"/><rect x="70" y="216" width="160" height="8" fill="#fff" opacity=".8"/>`; break
+    case 'vee': art = `<path d="M70 150 L150 198 L230 150 L230 170 L150 218 L70 170Z" fill="${k.accent}"/>`; break
+    case 'sash': art = `<path d="M70 236 L230 128 L230 156 L70 264Z" fill="${k.trim}"/><path d="M70 266 L230 158 L230 170 L70 278Z" fill="${k.accent}"/>`; break
   }
+  const sleeves = 'M62 38 L78 112 L60 144 Q56 151 50 148 L12 128 Q5 124 8 118 L28 70 Q40 46 62 38Z M238 38 L222 112 L240 144 Q244 151 250 148 L288 128 Q295 124 292 118 L272 70 Q260 46 238 38Z'
   return `<svg viewBox="0 0 300 320" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
     <defs>
       <clipPath id="${id}c"><path d="${shirt}"/></clipPath>
-      <linearGradient id="${id}s" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".28"/><stop offset=".3" stop-color="#fff" stop-opacity=".1"/><stop offset=".7" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".3"/></linearGradient>
+      <filter id="${id}b" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="6"/></filter>
+      <linearGradient id="${id}s" x1="0" x2="1">
+        <stop offset="0" stop-color="#000" stop-opacity=".30"/><stop offset=".22" stop-color="#000" stop-opacity=".04"/>
+        <stop offset=".5" stop-color="#fff" stop-opacity=".07"/><stop offset=".78" stop-color="#000" stop-opacity=".05"/><stop offset="1" stop-color="#000" stop-opacity=".34"/>
+      </linearGradient>
+      <linearGradient id="${id}v" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#fff" stop-opacity=".16"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".22"/>
+      </linearGradient>
+      <pattern id="${id}m" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="4" height="1.2" fill="#000" opacity=".07"/></pattern>
     </defs>
     <path d="${shirt}" fill="${k.body}"/>
     <g clip-path="url(#${id}c)">
       ${art}
-      <text x="150" y="272" text-anchor="middle" font-family="Plus Jakarta Sans, sans-serif" font-weight="800" font-size="44" fill="${k.num}" opacity=".92">10</text>
-      <path d="M12 112 L54 138 L48 150 L4 124Z" fill="${k.trim}"/><path d="M288 112 L246 138 L252 150 L296 124Z" fill="${k.trim}"/>
+      <text x="150" y="274" text-anchor="middle" font-family="Plus Jakarta Sans, sans-serif" font-weight="800" font-size="44" fill="${k.num}" opacity=".94">10</text>
+      <path d="${sleeves}" fill="#000" opacity=".1"/>
+      <path d="M8 121 L52 150" stroke="${k.trim}" stroke-width="15"/><path d="M292 121 L248 150" stroke="${k.trim}" stroke-width="15"/>
+      <path d="M62 38 L78 112 M238 38 L222 112" stroke="#000" stroke-opacity=".28" stroke-width="1.6" fill="none"/>
+      <path d="M63.500 39 L79.500 113 M236.500 39 L220.500 113" stroke="#fff" stroke-opacity=".22" stroke-width="1" stroke-dasharray="3 2" fill="none"/>
+      <ellipse cx="82" cy="122" rx="14" ry="26" fill="#000" opacity=".22" filter="url(#${id}b)"/><ellipse cx="218" cy="122" rx="14" ry="26" fill="#000" opacity=".22" filter="url(#${id}b)"/>
+      <path d="M112 128 Q122 205 108 288" stroke="#fff" stroke-opacity=".14" stroke-width="14" fill="none" filter="url(#${id}b)"/>
+      <path d="M190 132 Q180 210 196 290" stroke="#000" stroke-opacity=".16" stroke-width="16" fill="none" filter="url(#${id}b)"/>
+      <path d="M140 150 Q150 215 138 288" stroke="#000" stroke-opacity=".07" stroke-width="10" fill="none" filter="url(#${id}b)"/>
+      <rect width="300" height="320" fill="url(#${id}m)"/>
       <rect width="300" height="320" fill="url(#${id}s)"/>
+      <rect width="300" height="320" fill="url(#${id}v)"/>
+      <path d="M76 279 Q150 298 224 279" stroke="#fff" stroke-opacity=".28" stroke-width="1" stroke-dasharray="4 3" fill="none"/>
+      <path d="M74 288 Q150 308 226 288" stroke="#000" stroke-opacity=".2" stroke-width="5" fill="none"/>
     </g>
-    <path d="M96 28 Q150 74 204 28 L192 22 Q150 56 108 22Z" fill="${k.trim}"/>
-    <path d="M106 24 Q150 58 194 24 Q150 86 106 24Z" fill="#000" opacity=".28"/>
-    <circle cx="106" cy="128" r="7" fill="${k.accent}" stroke="#fff" stroke-width="1.5" opacity=".95"/>
-    <path d="${shirt}" fill="none" stroke="#000" stroke-opacity=".18" stroke-width="1.5"/>
+    <path d="M104 22 Q150 6 196 22 L150 66Z" fill="${k.trim}"/>
+    <path d="M104 22 Q150 6 196 22 L150 66Z" fill="#000" opacity=".42"/>
+    <path d="M104 22 L150 66 L196 22 L206 31 L150 80 L94 31Z" fill="${k.trim}"/>
+    <path d="M94 31 L150 80 L206 31" stroke="#000" stroke-opacity=".25" stroke-width="1.2" fill="none"/>
+    <path d="M104 22 L150 66 L196 22" stroke="#fff" stroke-opacity=".3" stroke-width="1" fill="none"/>
+    <circle cx="106" cy="130" r="7" fill="${k.accent}" stroke="#fff" stroke-width="1.5" opacity=".95"/>
+    <path d="${shirt}" fill="none" stroke="#000" stroke-opacity=".22" stroke-width="1.4"/>
   </svg>`
 }
 
